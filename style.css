@@ -117,3 +117,10 @@ body::before{
 .cell-letter{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 .cell-input{width:100%;height:100%;border:0;background:transparent;color:var(--muted);text-align:center;font-weight:700;font-size:15px}
 .board-meta{color:var(--muted-2);font-size:13px;margin-bottom:8px}
+/* Highlight for the active word and cell */
+.cell-word{background:linear-gradient(180deg, rgba(0,229,255,0.04), rgba(31,182,255,0.02));box-shadow:0 4px 18px rgba(31,182,255,0.04) inset;border:1px solid rgba(31,182,255,0.08)}
+.cell-word .cell-input{color:#e8fbff}
+.cell-active{outline:2px solid rgba(0,229,255,0.18);transform:translateY(-1px)}
+
+/* Selected clue */
+.selected-clue{background:linear-gradient(90deg, rgba(0,229,255,0.04), rgba(31,182,255,0.02));padding:4px;border-radius:6px}

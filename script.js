@@ -208,6 +208,10 @@ function renderCrossword(config){
   gridEl.className = 'crossword-grid';
   gridEl.style.gridTemplateColumns = `repeat(${config.cols}, 34px)`;
 
+  // Prepare map of cell elements for later interaction
+  const cellEls = Array.from({length:config.rows},()=>Array(config.cols).fill(null));
+  const cellToWords = {}; // 'r-c' -> [placedIndex,...]
+
   for(let r=0;r<config.rows;r++){
     for(let c=0;c<config.cols;c++){
       const cell = document.createElement('div');
@@ -224,8 +228,12 @@ function renderCrossword(config){
         const input = document.createElement('input');
         input.type = 'text'; input.maxLength = 1; input.disabled = true;
         input.className = 'cell-input';
+        // store coordinates for the element
+        cell.dataset.r = r; cell.dataset.c = c;
+        input.dataset.r = r; input.dataset.c = c;
         letter.appendChild(input);
         cell.appendChild(letter);
+        cellEls[r][c] = {cell, input};
       }
       gridEl.appendChild(cell);
     }
@@ -252,17 +260,261 @@ function renderCrossword(config){
   for(const p of acrossWords){
     const li = document.createElement('li');
     li.textContent = `${p.number || '-'} — ${p.clue}`;
+    // mark which placed index this corresponds to
+    li.dataset.wordIndex = placed.indexOf(p);
     horizEl && horizEl.appendChild(li);
   }
   for(const p of downWords){
     const li = document.createElement('li');
     li.textContent = `${p.number || '-'} — ${p.clue}`;
+    li.dataset.wordIndex = placed.indexOf(p);
     vertEl && vertEl.appendChild(li);
   }
 
   // Log de verificação matemática (pode ser útil para revisão)
   console.log('Crossword placed words:', placed.map(p=>({word:p.word,orient:p.orient,row:p.row,col:p.col,number:p.number})));
   console.table(placed.map(p=>({Palavra:p.word,Orientacao:p.orient,Row:p.row,Col:p.col,Numero:p.number,Cruzamentos:crossings[p.word]})));
+
+  // Build helper structures: for each placed word, list of cell coords
+  for(let idx=0; idx<placed.length; idx++){
+    const p = placed[idx];
+    p.cells = [];
+    const w = p.word;
+    for(let i=0;i<w.length;i++){
+      const r = p.orient === 'across' ? p.row : p.row + i;
+      const c = p.orient === 'across' ? p.col + i : p.col;
+      p.cells.push({r,c});
+      const key = `${r}-${c}`;
+      if(!cellToWords[key]) cellToWords[key] = [];
+      cellToWords[key].push(idx);
+    }
+  }
+
+  // Store state globally for interaction handlers
+  window.crosswordState = {
+    config, grid, placed, numbers, crossings, cellEls, cellToWords
+  };
+
+  // Enable inputs and attach event listeners
+  for(let r=0;r<config.rows;r++){
+    for(let c=0;c<config.cols;c++){
+      const entry = cellEls[r][c];
+      if(!entry) continue;
+      const {cell,input} = entry;
+      input.disabled = false;
+      input.value = '';
+      input.autocomplete = 'off';
+      input.inputMode = 'text';
+
+      // Click on cell selects a word
+      cell.addEventListener('click', function(ev){
+        const key = `${r}-${c}`;
+        const wordsHere = cellToWords[key] || [];
+        if(wordsHere.length === 0) return;
+        // if current selected word includes this cell, and there are two words, toggle
+        const state = window.crosswordState;
+        const cur = state.currentWordIndex;
+        let choose = wordsHere[0];
+        if(cur != null && wordsHere.includes(cur)){
+          if(wordsHere.length > 1){
+            // pick the other word
+            choose = wordsHere.find(i=>i!==cur) || wordsHere[0];
+          } else choose = cur;
+        }
+        selectWordByIndex(choose);
+        // focus the input
+        input.focus();
+      });
+
+      // Key handling
+      input.addEventListener('keydown', function(e){
+        const state = window.crosswordState;
+        const curIdx = state.currentWordIndex;
+        const r0 = parseInt(this.dataset.r,10); const c0 = parseInt(this.dataset.c,10);
+        // Allow navigation keys
+        if(e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown'){
+          e.preventDefault();
+          handleArrowKey(e.key, r0, c0);
+          return;
+        }
+        if(e.key === 'Backspace'){
+          e.preventDefault();
+          handleBackspace(r0,c0);
+          return;
+        }
+        if(e.key === 'Delete'){
+          e.preventDefault();
+          this.value = '';
+          return;
+        }
+        // Allow only letters
+        if(e.key.length === 1 && !/^[a-zA-Z]$/.test(e.key)){
+          e.preventDefault();
+          return;
+        }
+        // For other keys, let input event handle
+      });
+
+      input.addEventListener('input', function(e){
+        // Normalize to uppercase single letter
+        let v = this.value.toUpperCase().replace(/[^A-Z]/g,'');
+        this.value = v;
+        if(v.length > 0){
+          // move to next cell in current word
+          moveToNextInWord(parseInt(this.dataset.r,10), parseInt(this.dataset.c,10));
+        }
+      });
+      // Focus/blur visuals and selection sync
+      input.addEventListener('focus', function(){
+        const rr = parseInt(this.dataset.r,10), cc = parseInt(this.dataset.c,10);
+        const cellEl = window.crosswordState && window.crosswordState.cellEls[rr] && window.crosswordState.cellEls[rr][cc] && window.crosswordState.cellEls[rr][cc].cell;
+        if(cellEl) cellEl.classList.add('cell-active');
+        // if focused cell is part of a word not currently selected, select it
+        const key = `${rr}-${cc}`;
+        const wordsHere = (window.crosswordState && window.crosswordState.cellToWords[key])||[];
+        if(wordsHere.length>0){
+          const cur = window.crosswordState.currentWordIndex;
+          if(cur == null || !wordsHere.includes(cur)){
+            // prefer across if available
+            const pick = wordsHere.find(i=>window.crosswordState.placed[i].orient==='across') || wordsHere[0];
+            selectWordByIndex(pick);
+          }
+        }
+      });
+      input.addEventListener('blur', function(){
+        const rr = parseInt(this.dataset.r,10), cc = parseInt(this.dataset.c,10);
+        const cellEl = window.crosswordState && window.crosswordState.cellEls[rr] && window.crosswordState.cellEls[rr][cc] && window.crosswordState.cellEls[rr][cc].cell;
+        if(cellEl) cellEl.classList.remove('cell-active');
+      });
+    }
+  }
+
+  // Attach click handlers to clues
+  const allClues = document.querySelectorAll('#clues-horizontal li, #clues-vertical li');
+  allClues.forEach(li=>{
+    li.addEventListener('click', function(){
+      const idx = parseInt(this.dataset.wordIndex,10);
+      if(!Number.isFinite(idx)) return;
+      selectWordByIndex(idx);
+      // focus first cell of the word
+      const p = window.crosswordState.placed[idx];
+      const cr = p.cells[0];
+      const inp = window.crosswordState.cellEls[cr.r][cr.c].input;
+      inp.focus();
+    });
+  });
+
+  // Select first word by default
+  if(placed.length>0) selectWordByIndex(0);
+}
+
+// Select a word by its placed index
+function selectWordByIndex(idx){
+  const state = window.crosswordState;
+  if(!state) return;
+  const placed = state.placed;
+  if(idx < 0 || idx >= placed.length) return;
+  state.currentWordIndex = idx;
+  // Clear previous highlights
+  document.querySelectorAll('.cell').forEach(el=>el.classList.remove('cell-active','cell-word'));
+  document.querySelectorAll('#clues-horizontal li,#clues-vertical li').forEach(li=>li.classList.remove('selected-clue'));
+  // Highlight clue
+  const clueLis = document.querySelectorAll(`#clues-horizontal li[data-word-index='${idx}'], #clues-vertical li[data-word-index='${idx}']`);
+  clueLis.forEach(li=>li.classList.add('selected-clue'));
+  // Highlight cells in word
+  const p = placed[idx];
+  for(const cellPos of p.cells){
+    const el = state.cellEls[cellPos.r][cellPos.c].cell;
+    el.classList.add('cell-word');
+  }
+  // Mark active cell as first cell
+  const first = p.cells[0];
+  const input = state.cellEls[first.r][first.c].input;
+  // Only focus if the game screen is visible to avoid stealing focus on page load
+  const gameScreen = document.getElementById('game-screen');
+  if(!gameScreen || !gameScreen.classList.contains('hidden')){
+    input.focus();
+    input.select && input.select();
+  }
+}
+
+function handleArrowKey(key, r, c){
+  const state = window.crosswordState;
+  if(!state) return;
+  const curIdx = state.currentWordIndex;
+  if(curIdx == null) return;
+  const p = state.placed[curIdx];
+  // find position in word
+  let pos = p.cells.findIndex(cell=>cell.r===r && cell.c===c);
+  if(pos === -1) return;
+  let target = null;
+  if(key === 'ArrowLeft'){
+    if(p.orient === 'across' && pos > 0) target = p.cells[pos-1];
+  } else if(key === 'ArrowRight'){
+    if(p.orient === 'across' && pos < p.cells.length-1) target = p.cells[pos+1];
+  } else if(key === 'ArrowUp'){
+    // if there is a down word at current cell, switch to it; otherwise try moving within current word if vertical
+    const keyStr = `${r}-${c}`;
+    const wordsHere = state.cellToWords[keyStr]||[];
+    const downIdx = wordsHere.find(i=>state.placed[i].orient==='down');
+    if(downIdx != null){
+      // switch selection
+      selectWordByIndex(downIdx);
+      // focus corresponding cell index in new word
+      const newPos = state.placed[downIdx].cells.findIndex(cell=>cell.r===r && cell.c===c);
+      target = state.placed[downIdx].cells[Math.max(0,newPos-1)];
+    }
+  } else if(key === 'ArrowDown'){
+    const keyStr = `${r}-${c}`;
+    const wordsHere = state.cellToWords[keyStr]||[];
+    const downIdx = wordsHere.find(i=>state.placed[i].orient==='down');
+    if(downIdx != null){
+      selectWordByIndex(downIdx);
+      const newPos = state.placed[downIdx].cells.findIndex(cell=>cell.r===r && cell.c===c);
+      target = state.placed[downIdx].cells[Math.min(state.placed[downIdx].cells.length-1,newPos+1)];
+    }
+  }
+  if(target){
+    const inp = state.cellEls[target.r][target.c].input;
+    inp.focus();
+  }
+}
+
+function handleBackspace(r,c){
+  const state = window.crosswordState;
+  if(!state) return;
+  const curIdx = state.currentWordIndex;
+  if(curIdx == null) return;
+  const p = state.placed[curIdx];
+  let pos = p.cells.findIndex(cell=>cell.r===r && cell.c===c);
+  if(pos === -1) return;
+  const inp = state.cellEls[r][c].input;
+  if(inp.value){
+    inp.value = '';
+    return;
+  }
+  // move to previous cell
+  if(pos > 0){
+    const prev = p.cells[pos-1];
+    const prevInp = state.cellEls[prev.r][prev.c].input;
+    prevInp.focus();
+    prevInp.value = '';
+  }
+}
+
+function moveToNextInWord(r,c){
+  const state = window.crosswordState;
+  if(!state) return;
+  const curIdx = state.currentWordIndex;
+  if(curIdx == null) return;
+  const p = state.placed[curIdx];
+  let pos = p.cells.findIndex(cell=>cell.r===r && cell.c===c);
+  if(pos === -1) return;
+  if(pos < p.cells.length-1){
+    const next = p.cells[pos+1];
+    const nextInp = state.cellEls[next.r][next.c].input;
+    nextInp.focus();
+  }
 }
 
 // Renderizar quando a tela de jogo for exibida
