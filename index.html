@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CORE — Central de Processamento</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>CORE — Central de Processamento</h1>
+  </header>
+
+  <main class="app-main">
+    <!-- Tela inicial -->
+    <section id="start-screen" class="screen">
+      <div class="card intro-card">
+        <h2>Bem-vindo(a), Agente</h2>
+        <p class="mission">Sua missão: recuperar os componentes do sistema resolvendo uma cruzadinha temática de Arquitetura Computacional.</p>
+        <div class="controls">
+          <button id="start-btn" class="btn primary">Iniciar missão</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tela principal do jogo -->
+    <section id="game-screen" class="screen hidden">
+      <div class="panel">
+        <aside class="control-panel">
+          <h3>Painel de Controle</h3>
+          <div class="indicator">
+            <label>Progresso</label>
+            <div class="progress-wrap" aria-hidden="true">
+              <div id="progress-bar" class="progress-bar" style="width:0%"></div>
+            </div>
+            <div id="progress-text" class="progress-text">0 de 12 palavras</div>
+          </div>
+
+          <div class="indicator">
+            <label>Integridade do sistema</label>
+            <div id="integrity" class="integrity">100%</div>
+          </div>
+
+          <div class="panel-actions">
+            <button id="simulate-complete" class="btn">Concluir missão (simular)</button>
+            <button id="back-to-start" class="btn secondary">Voltar ao início</button>
+          </div>
+        </aside>
+
+        <section class="game-area">
+          <div class="board">
+            <h4>Tabuleiro (área reservada)</h4>
+            <div class="board-placeholder">Cruzadinha aparecerá aqui — área reservada</div>
+          </div>
+
+          <div class="clues">
+            <div class="clues-column">
+              <h5>Horizontais</h5>
+              <ol id="clues-horizontal">
+                <li>Pista 1 — (reservado)</li>
+                <li>Pista 2 — (reservado)</li>
+                <li>Pista 3 — (reservado)</li>
+              </ol>
+            </div>
+            <div class="clues-column">
+              <h5>Verticais</h5>
+              <ol id="clues-vertical">
+                <li>Pista 1 — (reservado)</li>
+                <li>Pista 2 — (reservado)</li>
+                <li>Pista 3 — (reservado)</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Tela de conclusão -->
+    <section id="end-screen" class="screen hidden">
+      <div class="card end-card">
+        <h2>Missão Concluída</h2>
+        <p class="result-text">Parabéns — todas as palavras foram resolvidas (simulação).</p>
+        <div class="summary">
+          <p>Pontuação final: —</p>
+          <p>Progresso: <span id="final-progress">100%</span></p>
+        </div>
+        <div class="controls">
+          <button id="restart-btn" class="btn primary">Reiniciar experiência</button>
+          <button id="to-start-btn" class="btn secondary">Voltar ao início</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
