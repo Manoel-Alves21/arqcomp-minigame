@@ -124,3 +124,12 @@ body::before{
 
 /* Selected clue */
 .selected-clue{background:linear-gradient(90deg, rgba(0,229,255,0.04), rgba(31,182,255,0.02));padding:4px;border-radius:6px}
+
+/* Feedback for correct/incorrect words */
+.cell-correct{background:linear-gradient(180deg, rgba(51,214,159,0.12), rgba(51,214,159,0.08));border:1px solid rgba(51,214,159,0.18);box-shadow:0 6px 20px rgba(51,214,159,0.04) inset}
+.cell-correct .cell-input{color:#023728}
+.cell-incorrect{background:linear-gradient(180deg, rgba(255,107,107,0.10), rgba(255,107,107,0.06));border:1px solid rgba(255,107,107,0.18);box-shadow:0 6px 20px rgba(255,107,107,0.04) inset}
+.cell-incorrect .cell-input{color:#3a0b0b}
+
+.clue-correct{background:linear-gradient(90deg, rgba(51,214,159,0.06), rgba(51,214,159,0.02));padding:4px;border-radius:6px}
+.clue-incorrect{background:linear-gradient(90deg, rgba(255,107,107,0.06), rgba(255,107,107,0.02));padding:4px;border-radius:6px}

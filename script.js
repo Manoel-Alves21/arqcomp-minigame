@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function(){
   const progressText = document.getElementById('progress-text');
   const integrityEl = document.getElementById('integrity');
   const finalProgress = document.getElementById('final-progress');
+  const checkBtn = document.getElementById('check-btn');
+  const resetBtn = document.getElementById('reset-btn');
 
   function showScreen(name){
     startScreen.classList.add('hidden');
@@ -31,10 +33,12 @@ document.addEventListener('DOMContentLoaded', function(){
   startBtn.addEventListener('click', function(){
     // ao entrar na tela de jogo, mostramos os indicadores iniciais
     progressBar.style.width = '0%';
-    progressText.textContent = '0 de 12 palavras';
+    progressText.textContent = `${0} de ${crosswordConfig.words.length} palavras`;
     integrityEl.textContent = '100%';
-    integrityEl.style.color = '';
+    integrityEl.classList.remove('warn');
     showScreen('game');
+    // ensure board reset when starting
+    resetBoard();
   });
 
   backToStartBtn.addEventListener('click', function(){ showScreen('start'); });
@@ -42,15 +46,17 @@ document.addEventListener('DOMContentLoaded', function(){
   // Simula conclusão para testar a tela de fim sem implementar a lógica da cruzadinha
   simulateCompleteBtn.addEventListener('click', function(){
     progressBar.style.width = '100%';
-    progressText.textContent = '12 de 12 palavras';
+    progressText.textContent = `${crosswordConfig.words.length} de ${crosswordConfig.words.length} palavras`;
     integrityEl.textContent = '100%';
     finalProgress.textContent = '100%';
     showScreen('end');
   });
 
+  // End screen: reiniciar experiência — volta para o jogo com estado limpo
   restartBtn.addEventListener('click', function(){
-    // reinicia o protótipo — não há estado da cruzadinha implementado aqui
-    showScreen('start');
+    resetBoard();
+    // show game directly so player can play again
+    showScreen('game');
   });
 
   toStartBtn.addEventListener('click', function(){ showScreen('start'); });
@@ -521,4 +527,111 @@ function moveToNextInWord(r,c){
 // Observação: showScreen('game') é chamado no carregamento; também chamamos renderCrossword para preparar a grade
 document.addEventListener('DOMContentLoaded', function(){
   renderCrossword(crosswordConfig);
+});
+
+// --- Validation, scoring and reset logic ---
+function getCurrentState(){
+  return window.crosswordState;
+}
+
+function checkAllWords(){
+  const state = getCurrentState();
+  if(!state) return;
+  const placed = state.placed;
+  const total = placed.length;
+  let correctCount = 0;
+
+  // For each word, read letters from inputs and compare to expected
+  for(let idx=0; idx<placed.length; idx++){
+    const p = placed[idx];
+    let assembled = '';
+    let complete = true;
+    for(const cellPos of p.cells){
+      const inp = state.cellEls[cellPos.r][cellPos.c].input;
+      const v = (inp && inp.value) ? inp.value.toUpperCase() : '';
+      if(!v) complete = false;
+      assembled += v || '';
+    }
+    const isCorrect = complete && assembled === p.word;
+
+    // Visual feedback per cell
+    for(const cellPos of p.cells){
+      const cellEl = state.cellEls[cellPos.r][cellPos.c].cell;
+      cellEl.classList.remove('cell-correct','cell-incorrect');
+      if(isCorrect) cellEl.classList.add('cell-correct');
+      else if(!isCorrect) cellEl.classList.add('cell-incorrect');
+    }
+
+    // Clue feedback
+    const clueLis = document.querySelectorAll(`#clues-horizontal li[data-word-index='${idx}'], #clues-vertical li[data-word-index='${idx}']`);
+    clueLis.forEach(li=>{
+      li.classList.remove('clue-correct','clue-incorrect');
+      if(isCorrect) li.classList.add('clue-correct');
+      else li.classList.add('clue-incorrect');
+    });
+
+    if(isCorrect) correctCount++;
+  }
+
+  // Update indicators
+  const progressText = document.getElementById('progress-text');
+  const progressBar = document.getElementById('progress-bar');
+  const integrityEl = document.getElementById('integrity');
+  progressText.textContent = `${correctCount} de ${total} palavras`;
+  const pct = Math.round((correctCount/total)*100);
+  progressBar.style.width = pct + '%';
+  integrityEl.textContent = pct + '%';
+  if(pct < 50) integrityEl.classList.add('warn'); else integrityEl.classList.remove('warn');
+
+  // If all correct, show end screen
+  if(correctCount === total){
+    const finalProgress = document.getElementById('final-progress');
+    finalProgress.textContent = '100%';
+    // update end screen summary with final score
+    const endMsg = document.querySelector('.result-text');
+    if(endMsg) endMsg.textContent = 'Missão concluída — todas as palavras foram resolvidas.';
+    const summary = document.querySelector('.summary');
+    if(summary){
+      summary.querySelector('p') && (summary.querySelector('p').textContent = `Pontuação final: ${correctCount} de ${total}`);
+    }
+    showScreen('end');
+  }
+}
+
+function resetBoard(){
+  const state = getCurrentState();
+  if(!state) return;
+  const placed = state.placed;
+  // clear inputs and feedback classes
+  for(let r=0;r<state.config.rows;r++){
+    for(let c=0;c<state.config.cols;c++){
+      const entry = state.cellEls[r][c];
+      if(!entry) continue;
+      entry.input.value = '';
+      const cellEl = entry.cell;
+      cellEl.classList.remove('cell-correct','cell-incorrect');
+    }
+  }
+  // clear clue classes
+  document.querySelectorAll('#clues-horizontal li,#clues-vertical li').forEach(li=>li.classList.remove('clue-correct','clue-incorrect'));
+
+  // reset indicators
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
+  const integrityEl = document.getElementById('integrity');
+  progressBar.style.width = '0%';
+  progressText.textContent = `${0} de ${placed.length} palavras`;
+  integrityEl.textContent = '100%';
+  integrityEl.classList.remove('warn');
+
+  // select first word again
+  if(placed.length>0) selectWordByIndex(0);
+}
+
+// Hook buttons (may be added after DOMContentLoaded)
+document.addEventListener('DOMContentLoaded', function(){
+  const checkBtn = document.getElementById('check-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  if(checkBtn) checkBtn.addEventListener('click', function(){ checkAllWords(); });
+  if(resetBtn) resetBtn.addEventListener('click', function(){ resetBoard(); });
 });
