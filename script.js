@@ -212,12 +212,13 @@ function renderCrossword(config){
   // Build visual grid
   const gridEl = document.createElement('div');
   gridEl.className = 'crossword-grid';
-  gridEl.style.gridTemplateColumns = `repeat(${config.cols}, 34px)`;
+  // We'll compute column size dynamically based on available container width
 
   // Prepare map of cell elements for later interaction
   const cellEls = Array.from({length:config.rows},()=>Array(config.cols).fill(null));
   const cellToWords = {}; // 'r-c' -> [placedIndex,...]
 
+  // create cells first (we'll set inline sizes after measuring)
   for(let r=0;r<config.rows;r++){
     for(let c=0;c<config.cols;c++){
       const cell = document.createElement('div');
@@ -245,13 +246,29 @@ function renderCrossword(config){
     }
   }
 
-  // Replace container contents
+  // Replace container contents and wrap grid into a scrollable wrapper
   container.innerHTML = '';
   const boardHeader = document.createElement('div');
   boardHeader.className = 'board-meta';
   boardHeader.innerHTML = `<div class="board-size">Grade: ${config.rows} x ${config.cols}</div>`;
   container.appendChild(boardHeader);
-  container.appendChild(gridEl);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'crossword-wrap';
+  // measure available width and compute optimal cell size (min 20, max 34)
+  const availableWidth = Math.max(200, container.clientWidth - 24); // avoid zero on hidden elements
+  const gap = 4; // must match CSS
+  let cellSize = Math.floor((availableWidth - (config.cols-1)*gap) / config.cols);
+  if(cellSize > 34) cellSize = 34;
+  if(cellSize < 20) cellSize = 20;
+  // set grid template columns accordingly
+  gridEl.style.gridTemplateColumns = `repeat(${config.cols}, ${cellSize}px)`;
+  // set each cell inline size to ensure consistent rendering and no overlap
+  const cellNodes = gridEl.querySelectorAll('.cell');
+  cellNodes.forEach(n=>{ n.style.width = cellSize + 'px'; n.style.height = cellSize + 'px'; });
+
+  wrap.appendChild(gridEl);
+  container.appendChild(wrap);
 
   // Render pistas
   const horizEl = document.getElementById('clues-horizontal');
@@ -300,6 +317,9 @@ function renderCrossword(config){
   window.crosswordState = {
     config, grid, placed, numbers, crossings, cellEls, cellToWords
   };
+  // expose grid element and wrapper for resizing adjustments
+  window.crosswordState.gridEl = gridEl;
+  window.crosswordState.gridWrap = wrap;
 
   // Enable inputs and attach event listeners
   for(let r=0;r<config.rows;r++){
@@ -412,6 +432,26 @@ function renderCrossword(config){
 
   // Select first word by default
   if(placed.length>0) selectWordByIndex(0);
+
+  // Adjust grid sizing on window resize so it never overflows container
+  let resizeTimer = null;
+  function adjustGridSize(){
+    const state = window.crosswordState;
+    if(!state) return;
+    const containerEl = document.querySelector('.board-placeholder');
+    const gridElLocal = state.gridEl;
+    if(!containerEl || !gridElLocal) return;
+    const availableWidth = Math.max(160, containerEl.clientWidth - 24);
+    const gap = 4;
+    let cellSize = Math.floor((availableWidth - (state.config.cols-1)*gap) / state.config.cols);
+    if(cellSize > 34) cellSize = 34;
+    if(cellSize < 16) cellSize = 16;
+    gridElLocal.style.gridTemplateColumns = `repeat(${state.config.cols}, ${cellSize}px)`;
+    gridElLocal.querySelectorAll('.cell').forEach(n=>{ n.style.width = cellSize + 'px'; n.style.height = cellSize + 'px'; });
+  }
+  window.addEventListener('resize', function(){ if(resizeTimer) clearTimeout(resizeTimer); resizeTimer = setTimeout(adjustGridSize, 120); });
+  // initial adjust (in case container size changed after render)
+  setTimeout(adjustGridSize, 50);
 }
 
 // Select a word by its placed index

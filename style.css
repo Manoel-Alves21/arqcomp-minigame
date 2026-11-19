@@ -77,7 +77,10 @@ body::before{
 .game-area{flex:1}
 .board{background:linear-gradient(180deg, rgba(6,18,34,0.45), rgba(6,18,34,0.25));padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);min-height:360px}
 .board h4{margin:0 0 10px;color:var(--accent-blue)}
-.board-placeholder{height:260px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9fbfcf;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));border:1px dashed rgba(255,255,255,0.03)}
+.board-placeholder{border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;color:#9fbfcf;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));border:1px dashed rgba(255,255,255,0.03);padding:12px;box-sizing:border-box;overflow:hidden}
+
+/* wrapper that allows the grid to scroll if it overflows available space */
+.crossword-wrap{width:100%;display:flex;align-items:center;justify-content:center;overflow:auto;padding:6px 0}
 
 .clues{display:flex;gap:12px;margin-top:14px}
 .clues-column{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
@@ -110,8 +113,8 @@ body::before{
 }
 
 /* Crossword grid styles */
-.crossword-grid{display:grid;gap:4px;margin:12px 0}
-.cell{width:34px;height:34px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.06));border:1px solid rgba(255,255,255,0.02);position:relative;display:flex;align-items:center;justify-content:center}
+.crossword-grid{display:inline-grid;gap:4px;margin:12px 0;box-sizing:border-box}
+.cell{width:34px;height:34px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.06));border:1px solid rgba(255,255,255,0.02);position:relative;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .cell-block{background:#03121a;border:1px solid rgba(255,255,255,0.02)}
 .cell-number{position:absolute;left:4px;top:2px;font-size:10px;color:rgba(255,255,255,0.6)}
 .cell-letter{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
