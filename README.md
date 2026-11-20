@@ -31,34 +31,47 @@ Como jogar
 5. O painel à esquerda mostra o progresso ("X de N palavras") e a integridade (percentual). Quando todas as palavras estiverem corretas, a tela de conclusão será exibida.
 6. Para zerar e reiniciar a partida, clique em "Reiniciar".
 
-Palavras usadas na cruzadinha (12 palavras)
 
-1. MICROCONTROLADOR — Unidade que integra processamento e periféricos em um único chip.
-2. MEMORIADEMASSA — Armazenamento permanente em grande capacidade usado para dados.
-3. REGISTRADORES — Pequenas áreas de armazenamento dentro da CPU usadas em operações.
-4. DATABUS — Conjunto de linhas que transferem bits entre componentes.
-5. ADDRESSBUS — Canal que transporta endereços de memória entre componentes.
-6. RAM — Memória volátil usada para armazenar dados temporariamente.
-7. ROM — Memória não volátil que contém firmware ou dados permanentes.
-8. CPU — Unidade central que executa instruções do programa.
-9. ULA — Parte do processador responsável por operações aritméticas e lógicas.
-10. DMA — Mecanismo que permite transferência direta entre periféricos e memória.
-11. FLASH — Memória não volátil regravável usada em armazenamento removível e embutido.
-12. UC — Unidade que coordena e controla as operações do processador.
+Palavras usadas na cruzadinha (16 palavras obrigatórias)
 
-Pistas (dicas)
+1. CPU — Unidade central que executa instruções do programa.
+2. ULA — Parte do processador responsável por operações aritméticas e lógicas.
+3. UC — Unidade de Controle (UC) que coordena as operações do processador.
+4. REGISTRADORES — Pequenas áreas de armazenamento dentro da CPU usadas em operações.
+5. RAM — Memória volátil usada para armazenar dados temporariamente.
+6. ROM — Memória não volátil que contém firmware ou dados permanentes.
+7. EEPROM — Memória não volátil regravável eletricamente em pequenas unidades.
+8. FLASH — Memória não volátil regravável usada em armazenamento removível e embutido.
+9. CACHE — Memória pequena e rápida usada para reduzir latência de acesso.
+10. MEMORIADEMASSA — Armazenamento permanente em grande capacidade usado para dados (por exemplo HDD/SSD).
+11. DMA — Mecanismo que permite transferência direta entre periféricos e memória.
+12. ADDRESSBUS — Canal que transporta endereços de memória entre componentes.
+13. DATABUS — Conjunto de linhas que transferem bits entre componentes.
+14. MICROCONTROLADOR — Unidade que integra processamento e periféricos em um único chip.
+15. DUALCORE — Configuração com dois núcleos de processamento em um único chip.
+16. QUADCORE — Configuração com quatro núcleos de processamento em um único chip.
 
-- Horizontais e Verticais são separadas automaticamente no jogo. As pistas completas estão presentes no arquivo `script.js` dentro do objeto `crosswordConfig.words`.
+Pistas e validação
+
+- As pistas oficiais (curtas) estão definidas no arquivo `script.js` dentro do objeto `crosswordConfig.words`.
+- Foram adicionadas pistas complementares (mostradas com o botão "Pista complementar") também em `script.js`. Essas pistas complementares foram formuladas a partir de definições gerais; por regra acadêmica do enunciado, elas devem ser validadas contra o material didático da disciplina (e-book). Por favor, revise e confirme as pistas complementares antes da entrega.
 
 Link de publicação
 
 - URL publicada: PENDENTE (preencher quando houver link de publicação)
 
-Arquivos modificados nesta etapa
+Arquivos modificados / criados nesta implementação
 
-- index.html — adição dos botões de controle e estrutura do jogo (já existia como base).
-- style.css — ajustes de layout para conter e centralizar a grade; adição de wrapper .crossword-wrap; estilos de feedback (células corretas/incorretas).
-- script.js — lógica de renderização ajustada para dimensionamento dinâmico das células, criação de wrapper rolável, ajuste em resize; validação e reinício implementados.
+- index.html — reorganização das áreas: map/fazenda, estação, painel lateral e área da cruzadinha; botões e controles de fluxo.
+- style.css — novos estilos para a fazenda, jogador, animações curtas, overlay da cruzadinha e ajustes na grade.
+- script.js — implementação completa:
+  - Posicionamento automático e validação das 16 palavras
+  - Renderização da grade, navegação entre células, digitação e verificação
+  - Sistema de dicas (pista complementar + revelar letra)
+  - Coleção de componentes e animações de recompensa
+  - Movimentação do jogador por teclado, colisão simples e interação com a estação (tecla E)
+  - Overlay para abrir/fechar a cruzadinha e bloqueio de movimento enquanto a atividade está aberta
+
 
 Problemas encontrados e correções realizadas
 

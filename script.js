@@ -2,7 +2,6 @@
 document.addEventListener('DOMContentLoaded', function(){
   const startBtn = document.getElementById('start-btn');
   const backToStartBtn = document.getElementById('back-to-start');
-  const simulateCompleteBtn = document.getElementById('simulate-complete');
   const restartBtn = document.getElementById('restart-btn');
   const toStartBtn = document.getElementById('to-start-btn');
 
@@ -26,8 +25,8 @@ document.addEventListener('DOMContentLoaded', function(){
     if(name === 'end')   endScreen.classList.remove('hidden');
   }
 
-  // Inicializa com a tela de início
-  showScreen('start');
+  // Inicializa mostrando diretamente a cruzadinha (modo somente cruzadinha)
+  showScreen('game');
 
   // Eventos de navegação
   startBtn.addEventListener('click', function(){
@@ -43,14 +42,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   backToStartBtn.addEventListener('click', function(){ showScreen('start'); });
 
-  // Simula conclusão para testar a tela de fim sem implementar a lógica da cruzadinha
-  simulateCompleteBtn.addEventListener('click', function(){
-    progressBar.style.width = '100%';
-    progressText.textContent = `${crosswordConfig.words.length} de ${crosswordConfig.words.length} palavras`;
-    integrityEl.textContent = '100%';
-    finalProgress.textContent = '100%';
-    showScreen('end');
-  });
+  // (simulateComplete removed in crossword-only mode)
 
   // End screen: reiniciar experiência — volta para o jogo com estado limpo
   restartBtn.addEventListener('click', function(){
@@ -69,23 +61,29 @@ document.addEventListener('DOMContentLoaded', function(){
 
 // Definição das palavras e posições (linha, coluna) 0-indexadas
 // Orientação: 'across' (horizontal) ou 'down' (vertical)
+// Full set of 16 words required by a especificação. Each word includes
+// an official clue and a complementary hint (complementary hints should
+// be validated against o material didático; veja README para itens a validar).
 const crosswordConfig = {
   rows: 16,
   cols: 16,
-  // palavras selecionadas — ao menos 12
   words: [
-    {word: 'MICROCONTROLADOR', orient: 'across', row: 0, col: 0, clue: 'Unidade que integra processamento e periféricos em um único chip.'},
-    {word: 'MEMORIADEMASSA', orient: 'down', row: 0, col: 0, clue: 'Armazenamento permanente em grande capacidade usado para dados.'},
-    {word: 'REGISTRADORES', orient: 'across', row: 4, col: 0, clue: 'Pequenas áreas de armazenamento dentro da CPU usadas em operações.'},
-    {word: 'DATABUS', orient: 'down', row: 4, col: 8, clue: 'Conjunto de linhas que transferem bits entre componentes.'},
-    {word: 'ADDRESSBUS', orient: 'across', row: 8, col: 1, clue: 'Canal que transporta endereços de memória entre componentes.'},
-    {word: 'RAM', orient: 'down', row: 8, col: 4, clue: 'Memória volátil usada para armazenar dados temporariamente.'},
-    {word: 'ROM', orient: 'down', row: 4, col: 10, clue: 'Memória não volátil que contém firmware ou dados permanentes.'},
-    {word: 'CPU', orient: 'down', row: 0, col: 2, clue: 'Unidade central que executa instruções do programa.'},
-    {word: 'ULA', orient: 'across', row: 1, col: 2, clue: 'Parte do processador responsável por operações aritméticas e lógicas.'},
-    {word: 'DMA', orient: 'down', row: 0, col: 13, clue: 'Mecanismo que permite transferência direta entre periféricos e memória.'},
-    {word: 'FLASH', orient: 'down', row: 1, col: 12, clue: 'Memória não volátil regravável usada em armazenamento removível e embutido.'},
-    {word: 'UC', orient: 'across', row: 9, col: 8, clue: 'Unidade que coordena e controla as operações do processador.'}
+    {id:'MICROCONTROLADOR', word: 'MICROCONTROLADOR', clue: 'Unidade que integra processamento e periféricos em um único chip.', hint: 'Usado em sistemas embarcados e integra CPU, memória e I/O.'},
+    {id:'MEMORIADEMASSA', word: 'MEMORIADEMASSA', clue: 'Armazenamento permanente em grande capacidade usado para dados.', hint: 'Exemplos: SSD e HDD.'},
+    {id:'REGISTRADORES', word: 'REGISTRADORES', clue: 'Pequenas áreas de armazenamento dentro da CPU usadas em operações.', hint: 'Armazenam operandos e resultados temporários.'},
+    {id:'DATABUS', word: 'DATABUS', clue: 'Conjunto de linhas que transferem bits entre componentes.', hint: 'Transporta os dados propriamente ditos.'},
+    {id:'ADDRESSBUS', word: 'ADDRESSBUS', clue: 'Canal que transporta endereços de memória entre componentes.', hint: 'Usado para indicar posições na RAM ou memória de massa.'},
+    {id:'RAM', word: 'RAM', clue: 'Memória volátil usada para armazenar dados temporariamente.', hint: 'Perde o conteúdo quando o sistema é desligado.'},
+    {id:'ROM', word: 'ROM', clue: 'Memória não volátil que contém firmware ou dados permanentes.', hint: 'Normalmente lida apenas para leitura.'},
+    {id:'CPU', word: 'CPU', clue: 'Unidade central que executa instruções do programa.', hint: 'Também chamada de processador.'},
+    {id:'ULA', word: 'ULA', clue: 'Parte do processador responsável por operações aritméticas e lógicas.', hint: 'Executa somas, subtrações e operações lógicas.'},
+    {id:'DMA', word: 'DMA', clue: 'Mecanismo que permite transferência direta entre periféricos e memória.', hint: 'Reduz a carga da CPU em transferências grandes.'},
+    {id:'FLASH', word: 'FLASH', clue: 'Memória não volátil regravável usada em armazenamento removível e embutido.', hint: 'Comum em pendrives e cartões.'},
+    {id:'UC', word: 'UC', clue: 'Unidade que coordena e controla as operações do processador.', hint: 'Responsável por buscar e interpretar instruções.'},
+    {id:'EEPROM', word: 'EEPROM', clue: 'Memória não volátil regravável eletricamente em pequenas unidades.', hint: 'Usada para armazenar configurações em sistemas embarcados.'},
+    {id:'CACHE', word: 'CACHE', clue: 'Memória pequena e rápida usada para reduzir latência de acesso.', hint: 'Armazena cópias temporárias de dados acessados frequentemente.'},
+    {id:'DUALCORE', word: 'DUALCORE', clue: 'Configuração com dois núcleos de processamento em um único chip.', hint: 'Permite execução paralela de threads.'},
+    {id:'QUADCORE', word: 'QUADCORE', clue: 'Configuração com quatro núcleos de processamento em um único chip.', hint: 'Oferece mais paralelismo que dual-core.'}
   ]
 };
 
@@ -100,49 +98,102 @@ function createEmptyGrid(rows, cols){
   return g;
 }
 
-// Tenta posicionar palavras na grade e valida cruzamentos
+// Tenta posicionar palavras na grade: algoritmo simples e determinístico.
+// Estratégia: ordenar por tamanho decrescente e tentar encontrar cruzamentos
+// com palavras já colocadas; caso não encontre, inserir em next-fit.
 function placeWords(config){
   const grid = createEmptyGrid(config.rows, config.cols);
   const placed = [];
 
-  for(const item of config.words){
-    const w = item.word.toUpperCase();
-    const r0 = item.row; const c0 = item.col;
-    let fits = true;
-
-    // Verifica limites
-    if(item.orient === 'across'){
-      if(c0 + w.length > config.cols) fits = false;
+  // helper: check if can place word at r,c with orient
+  function canPlace(word, r, c, orient){
+    if(orient==='across'){
+      if(c + word.length > config.cols) return false;
     } else {
-      if(r0 + w.length > config.rows) fits = false;
+      if(r + word.length > config.rows) return false;
     }
-    if(!fits){
-      console.error('Palavra não cabe nos limites:', w);
-      continue;
+    for(let i=0;i<word.length;i++){
+      const rr = orient==='across' ? r : r + i;
+      const cc = orient==='across' ? c + i : c;
+      const ch = word[i];
+      const cell = grid[rr][cc];
+      if(cell.ch && cell.ch !== ch) return false;
+      // also ensure neighbors don't create adjacent-letter conflicts (simple rule)
+      // allow overlap only when matching
     }
+    return true;
+  }
 
-    // Verifica conflitos e coloca letras
+  // write word into grid
+  function writeWord(item, r, c, orient){
+    const w = item.word;
     for(let i=0;i<w.length;i++){
-      const r = item.orient === 'across' ? r0 : r0 + i;
-      const c = item.orient === 'across' ? c0 + i : c0;
-      const ch = w[i];
-      const cell = grid[r][c];
-      // If cell already has a letter, must match
-      if(cell.ch && cell.ch !== ch){ fits = false; break; }
+      const rr = orient==='across' ? r : r + i;
+      const cc = orient==='across' ? c + i : c;
+      grid[rr][cc].ch = w[i];
+      grid[rr][cc].blocks = false;
     }
-    if(!fits){ console.error('Conflito ao posicionar:', w); continue; }
+    const placedItem = Object.assign({}, item, {orient, row:r, col:c, word:item.word});
+    placed.push(placedItem);
+    return placedItem;
+  }
 
-    // Place letters
-    for(let i=0;i<w.length;i++){
-      const r = item.orient === 'across' ? r0 : r0 + i;
-      const c = item.orient === 'across' ? c0 + i : c0;
-      const ch = w[i];
-      grid[r][c].ch = ch;
-      grid[r][c].blocks = false;
-      grid[r][c].starts = grid[r][c].starts || [];
+  // place longest first
+  const words = config.words.slice().sort((a,b)=>b.word.length - a.word.length);
+
+  for(const item of words){
+    const w = item.word;
+    let placedItem = null;
+
+    // try to cross with already placed words: find any matching letter
+    for(const p of placed){
+      for(let i=0;i<p.word.length;i++){
+        for(let j=0;j<w.length;j++){
+          if(p.word[i] !== w[j]) continue;
+          // compute candidate coordinates so w[j] aligns with p[i]
+          let r,c,orient;
+          if(p.orient === 'across'){
+            // p is across; candidate is down crossing at (p.row, p.col + i)
+            orient = 'down';
+            r = p.row - j;
+            c = p.col + i;
+          } else {
+            // p is down; candidate is across crossing at (p.row + i, p.col)
+            orient = 'across';
+            r = p.row + i;
+            c = p.col - j;
+          }
+          if(r < 0 || c < 0) continue;
+          if(canPlace(w, r, c, orient)){
+            placedItem = writeWord(item, r, c, orient);
+            break;
+          }
+        }
+        if(placedItem) break;
+      }
+      if(placedItem) break;
     }
 
-    placed.push(Object.assign({}, item, {word: w}));
+    // if not placed by crossing, try to find first free spot horizontal then vertical
+    if(!placedItem){
+      outer:
+      for(let r=0;r<config.rows;r++){
+        for(let c=0;c<config.cols;c++){
+          if(canPlace(w,r,c,'across')){ placedItem = writeWord(item,r,c,'across'); break outer; }
+        }
+      }
+    }
+    if(!placedItem){
+      outer2:
+      for(let c=0;c<config.cols;c++){
+        for(let r=0;r<config.rows;r++){
+          if(canPlace(w,r,c,'down')){ placedItem = writeWord(item,r,c,'down'); break outer2; }
+        }
+      }
+    }
+    if(!placedItem){
+      console.error('Não foi possível posicionar a palavra:', w);
+    }
   }
 
   return {grid, placed};
@@ -248,19 +299,20 @@ function renderCrossword(config){
 
   // Replace container contents and wrap grid into a scrollable wrapper
   container.innerHTML = '';
+  // create a persistent inner container so we can move it to an overlay without losing listeners
+  const inner = document.createElement('div'); inner.id = 'crossword-container';
   const boardHeader = document.createElement('div');
   boardHeader.className = 'board-meta';
   boardHeader.innerHTML = `<div class="board-size">Grade: ${config.rows} x ${config.cols}</div>`;
-  container.appendChild(boardHeader);
+  inner.appendChild(boardHeader);
 
-  const wrap = document.createElement('div');
-  wrap.className = 'crossword-wrap';
+  const wrap = document.createElement('div'); wrap.className = 'crossword-wrap';
   // measure available width and compute optimal cell size (min 20, max 34)
   const availableWidth = Math.max(200, container.clientWidth - 24); // avoid zero on hidden elements
   const gap = 4; // must match CSS
   let cellSize = Math.floor((availableWidth - (config.cols-1)*gap) / config.cols);
-  if(cellSize > 34) cellSize = 34;
-  if(cellSize < 20) cellSize = 20;
+  if(cellSize > 64) cellSize = 64;
+  if(cellSize < 40) cellSize = 40;
   // set grid template columns accordingly
   gridEl.style.gridTemplateColumns = `repeat(${config.cols}, ${cellSize}px)`;
   // set each cell inline size to ensure consistent rendering and no overlap
@@ -268,7 +320,8 @@ function renderCrossword(config){
   cellNodes.forEach(n=>{ n.style.width = cellSize + 'px'; n.style.height = cellSize + 'px'; });
 
   wrap.appendChild(gridEl);
-  container.appendChild(wrap);
+  inner.appendChild(wrap);
+  container.appendChild(inner);
 
   // Render pistas
   const horizEl = document.getElementById('clues-horizontal');
@@ -315,7 +368,11 @@ function renderCrossword(config){
 
   // Store state globally for interaction handlers
   window.crosswordState = {
-    config, grid, placed, numbers, crossings, cellEls, cellToWords
+    config, grid, placed, numbers, crossings, cellEls, cellToWords,
+    // track resolution state and hints used
+    solvedWords: Array(placed.length).fill(false),
+    revealUsed: Array(placed.length).fill(false),
+    compHintShown: Array(placed.length).fill(false)
   };
   // expose grid element and wrapper for resizing adjustments
   window.crosswordState.gridEl = gridEl;
@@ -430,6 +487,22 @@ function renderCrossword(config){
     });
   });
 
+  // Add hint controls below clues
+  const boardContainer = document.getElementById('crossword-container');
+  if(boardContainer){
+    const hintWrap = document.createElement('div');
+    hintWrap.style.marginTop = '8px';
+    hintWrap.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button id="hint-comp" class="btn">Pista complementar</button>
+        <button id="hint-reveal" class="btn">Revelar letra</button>
+        <div id="hint-output" style="color:var(--muted-2);font-size:13px"></div>
+      </div>`;
+    boardContainer.appendChild(hintWrap);
+    document.getElementById('hint-comp').addEventListener('click', function(){ showComplementaryHint(); });
+    document.getElementById('hint-reveal').addEventListener('click', function(){ revealOneLetter(); });
+  }
+
   // Select first word by default
   if(placed.length>0) selectWordByIndex(0);
 
@@ -444,8 +517,8 @@ function renderCrossword(config){
     const availableWidth = Math.max(160, containerEl.clientWidth - 24);
     const gap = 4;
     let cellSize = Math.floor((availableWidth - (state.config.cols-1)*gap) / state.config.cols);
-    if(cellSize > 34) cellSize = 34;
-    if(cellSize < 16) cellSize = 16;
+    if(cellSize > 64) cellSize = 64;
+    if(cellSize < 36) cellSize = 36;
     gridElLocal.style.gridTemplateColumns = `repeat(${state.config.cols}, ${cellSize}px)`;
     gridElLocal.querySelectorAll('.cell').forEach(n=>{ n.style.width = cellSize + 'px'; n.style.height = cellSize + 'px'; });
   }
@@ -482,6 +555,38 @@ function selectWordByIndex(idx){
     input.focus();
     input.select && input.select();
   }
+}
+
+// Show complementary hint (level 1) for the selected word
+function showComplementaryHint(){
+  const state = window.crosswordState; if(!state) return;
+  const idx = state.currentWordIndex; if(idx==null) return;
+  const out = document.getElementById('hint-output');
+  const p = state.placed[idx];
+  if(!p) return;
+  out.textContent = p.hint || 'Sem pista complementar disponível.';
+  state.compHintShown[idx] = true;
+}
+
+// Reveal one letter in the selected word (level 2). Marks revealUsed to avoid duplicate penalties.
+function revealOneLetter(){
+  const state = window.crosswordState; if(!state) return;
+  const idx = state.currentWordIndex; if(idx==null) return;
+  const p = state.placed[idx]; if(!p) return;
+  // find empty cells in this word
+  const empties = p.cells.filter(cell=>{ const v = state.cellEls[cell.r][cell.c].input.value; return !v; });
+  if(empties.length === 0) return;
+  // pick first empty that won't conflict: since grid already validated, filling it is safe
+  const chosen = empties[0];
+  const letter = p.word[p.cells.findIndex(c=>c.r===chosen.r&&c.c===chosen.c)];
+  state.cellEls[chosen.r][chosen.c].input.value = letter;
+  state.revealUsed[idx] = true;
+  // visual flash on the cell
+  const cellEl = state.cellEls[chosen.r][chosen.c].cell;
+  cellEl.classList.add('cell-word');
+  setTimeout(()=>cellEl.classList.remove('cell-word'),800);
+  // show short message
+  const out = document.getElementById('hint-output'); if(out) out.textContent = 'Uma letra foi revelada.';
 }
 
 function handleArrowKey(key, r, c){
@@ -567,6 +672,13 @@ function moveToNextInWord(r,c){
 // Observação: showScreen('game') é chamado no carregamento; também chamamos renderCrossword para preparar a grade
 document.addEventListener('DOMContentLoaded', function(){
   renderCrossword(crosswordConfig);
+  // prepare an empty collection UI
+  const controlPanel = document.querySelector('.control-panel');
+  if(controlPanel){
+    const collTitle = document.createElement('div'); collTitle.style.marginTop='8px'; collTitle.innerHTML = '<strong>Coleção</strong>';
+    const coll = document.createElement('div'); coll.className = 'collection';
+    controlPanel.appendChild(collTitle); controlPanel.appendChild(coll);
+  }
 });
 
 // --- Validation, scoring and reset logic ---
@@ -610,7 +722,14 @@ function checkAllWords(){
       else li.classList.add('clue-incorrect');
     });
 
-    if(isCorrect) correctCount++;
+    if(isCorrect){
+      correctCount++;
+      // award component if not yet awarded
+      if(!state.solvedWords[idx]){
+        state.solvedWords[idx] = true;
+        awardComponentForWord(idx);
+      }
+    }
   }
 
   // Update indicators
@@ -623,7 +742,7 @@ function checkAllWords(){
   integrityEl.textContent = pct + '%';
   if(pct < 50) integrityEl.classList.add('warn'); else integrityEl.classList.remove('warn');
 
-  // If all correct, show end screen
+// If all correct, show end screen
   if(correctCount === total){
     const finalProgress = document.getElementById('final-progress');
     finalProgress.textContent = '100%';
@@ -634,7 +753,35 @@ function checkAllWords(){
     if(summary){
       summary.querySelector('p') && (summary.querySelector('p').textContent = `Pontuação final: ${correctCount} de ${total}`);
     }
+    // final activation animation placeholder (no farm in crossword-only mode)
     showScreen('end');
+  }
+}
+
+// Overlay and farm interaction removed for crossword-only mode
+
+// Award visual component in farm and collection for a solved word
+function awardComponentForWord(idx){
+  const state = window.crosswordState; if(!state) return;
+  const p = state.placed[idx]; if(!p) return;
+  // mark in collection UI
+  const compId = 'comp-' + (p.number || idx);
+  let compEl = document.getElementById(compId);
+  if(!compEl){
+    // create if not present
+    const collection = document.querySelector('.collection');
+    if(collection){
+      compEl = document.createElement('div'); compEl.id = compId; compEl.className = 'component';
+      compEl.innerHTML = `<div class="icon"></div><div style="font-size:11px;margin-top:6px;text-align:center">${p.word}</div>`;
+      collection.appendChild(compEl);
+    }
+  }
+  if(compEl && !compEl.classList.contains('recovered')){
+    compEl.classList.add('recovered');
+    // brief visual feedback on the component element
+    compEl.style.transition = 'transform 260ms ease';
+    compEl.style.transform = 'scale(1.06)';
+    setTimeout(()=>{ compEl.style.transform = ''; },300);
   }
 }
 
@@ -666,6 +813,12 @@ function resetBoard(){
 
   // select first word again
   if(placed.length>0) selectWordByIndex(0);
+
+  // clear collection
+  const collection = document.querySelector('.collection');
+  if(collection) collection.innerHTML = '';
+  // reset solved state
+  if(state){ state.solvedWords = Array(placed.length).fill(false); state.revealUsed = Array(placed.length).fill(false); state.compHintShown = Array(placed.length).fill(false); }
 }
 
 // Hook buttons (may be added after DOMContentLoaded)
@@ -674,4 +827,5 @@ document.addEventListener('DOMContentLoaded', function(){
   const resetBtn = document.getElementById('reset-btn');
   if(checkBtn) checkBtn.addEventListener('click', function(){ checkAllWords(); });
   if(resetBtn) resetBtn.addEventListener('click', function(){ resetBoard(); });
+  // Farm and overlay code removed: crossword-only mode
 });

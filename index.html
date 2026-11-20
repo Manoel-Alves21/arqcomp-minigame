@@ -41,36 +41,29 @@
             <div id="integrity" class="integrity">100%</div>
           </div>
 
-          <div class="panel-actions">
-            <button id="check-btn" class="btn primary">Conferir</button>
-            <button id="reset-btn" class="btn">Reiniciar</button>
-            <button id="simulate-complete" class="btn">Concluir missão (simular)</button>
-            <button id="back-to-start" class="btn secondary">Voltar ao início</button>
-          </div>
+            <div class="panel-actions">
+              <button id="check-btn" class="btn primary">Conferir</button>
+              <button id="reset-btn" class="btn">Reiniciar</button>
+              <button id="back-to-start" class="btn secondary">Voltar ao início</button>
+            </div>
         </aside>
 
         <section class="game-area">
-          <div class="board">
-            <h4>Tabuleiro (área reservada)</h4>
-            <div class="board-placeholder">Cruzadinha aparecerá aqui — área reservada</div>
+          <div class="board card" style="width:100%">
+            <h4>Tabuleiro</h4>
+            <div class="board-placeholder" style="display:flex;flex-direction:column;align-items:center">
+              <div id="crossword-container">Cruzadinha aparecerá aqui — carregando...</div>
+            </div>
           </div>
 
           <div class="clues">
             <div class="clues-column">
               <h5>Horizontais</h5>
-              <ol id="clues-horizontal">
-                <li>Pista 1 — (reservado)</li>
-                <li>Pista 2 — (reservado)</li>
-                <li>Pista 3 — (reservado)</li>
-              </ol>
+              <ol id="clues-horizontal"></ol>
             </div>
             <div class="clues-column">
               <h5>Verticais</h5>
-              <ol id="clues-vertical">
-                <li>Pista 1 — (reservado)</li>
-                <li>Pista 2 — (reservado)</li>
-                <li>Pista 3 — (reservado)</li>
-              </ol>
+              <ol id="clues-vertical"></ol>
             </div>
           </div>
         </section>
